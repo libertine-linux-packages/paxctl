@@ -1,0 +1,53 @@
+# This file is part of libertine linux's package curl. It is subject to the license terms in the COPYRIGHT file found in the top-level directory of this distribution and at https://raw.githubusercontent.com/libertine-linux-packages/curl/master/COPYRIGHT. No part of libertine linux's package curl, including this file, may be copied, modified, propagated, or distributed except according to the terms contained in the COPYRIGHT file.
+# Copyright © 2016 The developers of libertine linux's package curl. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/libertine-linux-packages/curl/master/COPYRIGHT.
+
+
+# Downloaded from https://pax.grsecurity.net/paxctl-0.9.tar.gz (see https://pax.grsecurity.net/)
+variant=tarball
+
+depends build_ccache
+build_needs ccache
+
+depends build_gnumake
+build_needs make
+
+depends build_busybox
+
+build_provides paxctl
+
+case "$package" in
+	
+	build_paxctl)
+		depends build_musl_cross_make_build
+		build_needs "$libertine_build"-cc "$libertine_build"-ar "$libertine_build"-ld "$libertine_build"-ranlib
+		
+		build_needs mkdir mv
+		libertine_compile_build_paxctl()
+		{
+			pushd "$(libertine_public_sourcePath)"
+						
+				libertine_public_make CC="$libertine_build"-cc CFLAGS="$(libertine_public_buildCCompilerFlags)" LDFLAGS="$(libertine_public_buildCCompilerFlags)"
+				
+			popd
+			
+			local binFolderPath="$(libertine_public_outputBuildSysrootPath)"/usr/bin
+			
+			mkdir -m 0700 -p "$binFolderPath"
+			mv "$(libertine_public_sourcePath)"/paxctl "$binFolderPath"
+		}
+	
+	;;
+	
+	paxctl)
+		depends build_musl_cross_make_host
+		build_needs "$libertine_host"-cc "$libertine_host"-ar "$libertine_host"-ld "$libertine_host"-ranlib "$libertine_host"-strip
+
+		libertine_compile_build_paxctl()
+		{
+			printf 'Not likely to be supported\n' 1>&2
+			exit 99
+		}
+	;;
+	
+esac
+
